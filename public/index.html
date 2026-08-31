@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Samadhan</title>
+  <style>
+    body { font-family: sans-serif; display: flex; align-items: center; justify-content: center;
+           min-height: 100vh; margin: 0; background: #DEE2E8; color: #1B2130; }
+    .card { background: white; padding: 40px; border-radius: 16px; text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+    h1 { margin: 0 0 8px; }
+    p { color: #666; margin: 0 0 24px; }
+    a { color: #3D6FF2; text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Samadhan ✓</h1>
+    <p>Login successful! Apna main app yahan <code>public/index.html</code> mein rakho.</p>
+    <a href="/auth/logout" onclick="fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/login.html');return false;">
+      Logout
+    </a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Samadhan — Login</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #DEE2E8;
+  --ink: #1B2130;
+  --primary: #3D6FF2;
+  --primary-dark: #1E3FCB;
+  --line: rgba(255,255,255,0.55);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  min-height: 100vh; background: var(--bg); font-family: 'Inter', sans-serif;
+  color: var(--ink); position: relative; overflow-x: hidden;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.fraunces { font-family: 'Fraunces', serif; }
+button { cursor: pointer; font-family: inherit; border: none; }
+button:disabled { cursor: not-allowed; opacity: 0.6; }
+.blob { position: fixed; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; }
+.glass-card {
+  background: linear-gradient(135deg, rgba(180,190,205,0.45), rgba(61,111,242,0.55));
+  backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.55); box-shadow: 0 30px 60px rgba(30,40,70,0.25), inset 0 1px 0 rgba(255,255,255,0.35);
+  border-radius: 24px; color: #fff; position: relative; z-index: 1;
+}
+.oauth-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 13px 20px; border-radius: 999px; font-weight: 600; font-size: 15px;
+  background: rgba(255,255,255,0.92); color: #1B2130;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+.oauth-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,0.18); }
+.oauth-btn.twitter { background: #000; color: #fff; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; color: rgba(255,255,255,0.5); font-size: 12px; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.25); }
+.field-input {
+  width: 100%; padding: 11px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.12); color: #fff; font-size: 14px; outline: none;
+}
+.field-input::placeholder { color: rgba(255,255,255,0.55); }
+.field-input:focus { border-color: rgba(255,255,255,0.8); }
+.tab-switch { display: flex; gap: 6px; margin-bottom: 18px; background: rgba(255,255,255,0.1); border-radius: 999px; padding: 4px; }
+.tab-switch button { flex: 1; padding: 8px; border-radius: 999px; font-size: 13px; font-weight: 600; background: transparent; color: rgba(255,255,255,0.65); }
+.tab-switch button.active { background: rgba(255,255,255,0.92); color: #1B2130; }
+.submit-btn {
+  width: 100%; padding: 12px; border-radius: 999px; font-weight: 700; font-size: 14.5px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; margin-top: 6px;
+}
+.spinner {
+  display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-box {
+  background: rgba(224,87,74,0.25); border: 1px solid rgba(224,87,74,0.6);
+  border-radius: 12px; padding: 10px 14px; font-size: 13.5px; margin-bottom: 18px; color: #fff;
+}
+</style>
+</head>
+<body>
+
+<div class="blob" style="top:-180px;right:-220px;width:620px;height:620px;background:radial-gradient(circle, rgba(30,55,170,0.55), rgba(30,55,170,0) 70%);"></div>
+<div class="blob" style="bottom:-260px;left:-260px;width:640px;height:640px;background:radial-gradient(circle, rgba(10,12,20,0.55), rgba(10,12,20,0) 70%);"></div>
+
+<div class="glass-card" style="width:100%;max-width:400px;padding:40px 32px;">
+  <div style="text-align:center;margin-bottom:32px;">
+    <h1 class="fraunces" style="font-size:32px;font-weight:700;margin:0;letter-spacing:-0.01em;">Samadhan</h1>
+    <p style="margin:8px 0 0;font-size:14.5px;color:rgba(255,255,255,0.75);">From doubt, to notes, to quiz.</p>
+  </div>
+
+  <div id="errorBox"></div>
+
+  <div class="tab-switch">
+    <button id="loginTabBtn" class="active" onclick="switchMode('login')">Login</button>
+    <button id="registerTabBtn" onclick="switchMode('register')">Sign up</button>
+  </div>
+
+  <form id="authForm" style="display:flex;flex-direction:column;gap:12px;" onsubmit="return handleAuthSubmit(event)">
+    <input id="nameField" class="field-input" type="text" placeholder="Naam" style="display:none;" />
+    <input id="emailField" class="field-input" type="email" placeholder="Email" required />
+    <input id="passwordField" class="field-input" type="password" placeholder="Password (kam se kam 6 characters)" required minlength="6" />
+    <button id="authSubmitBtn" class="submit-btn" type="submit">Login</button>
+  </form>
+
+  <div class="divider">ya</div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <a href="/auth/google" id="googleBtn" class="oauth-btn">
+      <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
+        <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.33A9 9 0 0 0 9 18z"/>
+        <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.16.28-1.7V4.97H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.03l2.99-2.33z"/>
+        <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.97l2.99 2.33C4.66 5.17 6.65 3.58 9 3.58z"/>
+      </svg>
+      Continue with Google
+    </a>
+    <a href="/auth/twitter" id="twitterBtn" class="oauth-btn twitter">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18.9 1.5h3.3l-7.2 8.2 8.5 11.3h-6.6l-5.2-6.8-5.9 6.8H2.5l7.7-8.8L2 1.5h6.8l4.7 6.2 5.4-6.2Zm-1.2 17.6h1.8L6.4 3.3H4.5l13.2 15.8Z"/>
+      </svg>
+      Continue with X (Twitter)
+    </a>
+  </div>
+
+  <p style="margin:26px 0 0;font-size:12px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.6;">
+    Login karke aap apna XP, sticky notes aur progress save kar sakte hain.
+  </p>
+</div>
+
+<script>
+  let mode = 'login';
+  function switchMode(m) {
+    mode = m;
+    document.getElementById('loginTabBtn').classList.toggle('active', m === 'login');
+    document.getElementById('registerTabBtn').classList.toggle('active', m === 'register');
+    document.getElementById('nameField').style.display = m === 'register' ? 'block' : 'none';
+    document.getElementById('authSubmitBtn').textContent = m === 'register' ? 'Create account' : 'Login';
+    document.getElementById('errorBox').innerHTML = '';
+  }
+
+  async function handleAuthSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('authSubmitBtn');
+    const email = document.getElementById('emailField').value.trim();
+    const password = document.getElementById('passwordField').value;
+    const name = document.getElementById('nameField').value.trim();
+    const errorBox = document.getElementById('errorBox');
+    errorBox.innerHTML = '';
+    if (!email || !password) return false;
+
+    const url = mode === 'register' ? '/auth/register' : '/auth/login';
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>' + (mode === 'register' ? 'Creating...' : 'Logging in...');
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        errorBox.innerHTML = `<div class="error-box">⚠ ${data.error || 'Kuch galat ho gaya.'}</div>`;
+        btn.disabled = false;
+        btn.textContent = originalText;
+        return false;
+      }
+      window.location.href = '/';
+    } catch (err) {
+      errorBox.innerHTML = `<div class="error-box">⚠ Server se connect nahi ho paya.</div>`;
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+    return false;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const error = params.get('error');
+  if (error) {
+    const messages = {
+      google_not_configured: 'Google login abhi set up nahi hai — server ke .env mein GOOGLE_CLIENT_ID/SECRET daalo.',
+      twitter_not_configured: 'Twitter login abhi set up nahi hai — server ke .env mein TWITTER_CONSUMER_KEY/SECRET daalo.',
+      google_failed: 'Google se login fail ho gaya. Dobara try karo.',
+      twitter_failed: 'Twitter se login fail ho gaya. Dobara try karo.',
+    };
+    document.getElementById('errorBox').innerHTML =
+      `<div class="error-box">⚠ ${messages[error] || 'Login fail ho gaya, dobara try karo.'}</div>`;
+  }
+</script>
+
+</body>
+</html>
